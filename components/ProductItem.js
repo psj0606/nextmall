@@ -1,7 +1,6 @@
-import React from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
-
+import Link from 'next/link';
+import React from 'react';
 export default function ProductItem({ product }) {
   return (
     <div className="card">
@@ -17,7 +16,6 @@ export default function ProductItem({ product }) {
           />
         </a>
       </Link>
-
       <div className="flex flex-col items-center justify-center p-5">
         <Link href={`/product/${product.slug}`}>
           <a>

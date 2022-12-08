@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import Router, { useRouter } from 'next/router';
 import React, { useContext } from 'react';
 import Layout from '../components/Layout';
 import { Store } from '../utils/Store';
@@ -10,25 +10,22 @@ import dynamic from 'next/dynamic';
 function CartScreen() {
   const router = useRouter();
   const { state, dispatch } = useContext(Store);
-  const {
-    cart: { cartItems },
-  } = state;
-
-  const removeItemhandler = (item) => {
-    dispatch({ type: 'CART_REMOVE_ITEM', payload: item });
-  };
-
   const updateCartHandler = (item, qty) => {
     const quantity = Number(qty);
     dispatch({ type: 'CART_ADD_ITEM', payload: { ...item, quantity } });
   };
-
+  const removeItemHandler = (item) => {
+    dispatch({ type: 'CART_REMOVE_ITEM', payload: item });
+  };
+  const {
+    cart: { cartItems },
+  } = state;
   return (
     <Layout title="Shopping Cart">
-      <h1 className="mb-4 text-xl">Shopping Cart - 쇼핑카트</h1>
+      <h1 className="mb-4 text-xl"> Shopping Cart - 카트</h1>
       {cartItems.length === 0 ? (
         <div>
-          Cart is empty. <Link href="/">Go shopping - 쇼핑하러 가기 </Link>
+          Cart is empty. <Link href="/">Go Shopping</Link>
         </div>
       ) : (
         <div className="grid md:grid-cols-4 md:gap-5">
@@ -36,12 +33,13 @@ function CartScreen() {
             <table className="min-w-full">
               <thead className="border-b">
                 <tr>
-                  <th className="p-5 text-left">상품명</th>
-                  <th className="p-5 text-right"> 수량 </th>
-                  <th className="p-5 text-right"> 가격 </th>
-                  <th className="p-5 text-center"> 지우기 </th>
+                  <th className="p-5 text-left">Item</th>
+                  <th className="p-5 text-right">Quantity</th>
+                  <th className="p-5 text-right">Price</th>
+                  <th className="p-5">Action</th>
                 </tr>
               </thead>
+
               <tbody>
                 {cartItems.map((item) => (
                   <tr key={item.slug} className="border-b">
@@ -53,8 +51,8 @@ function CartScreen() {
                             alt={item.name}
                             width={50}
                             height={50}
-                          />
-                          &nbsp;&nbsp;
+                          ></Image>
+                          &nbsp;
                           {item.name}
                         </a>
                       </Link>
@@ -68,24 +66,36 @@ function CartScreen() {
                       >
                         {[...Array(item.countInStock).keys()].map((x) => (
                           <option key={x + 1} value={x + 1}>
-                            {' '}
-                            {x + 1}{' '}
+                            {x + 1}
                           </option>
                         ))}
                       </select>
                     </td>
-                    <td className="p-5 text-right"> {item.price}</td>
+                    <td className="p-5 text-right">${item.price}</td>
                     <td className="p-5 text-center">
-                      <button onClick={() => removeItemhandler(item)}>
+                      <button onClick={() => removeItemHandler(item)}>
                         <XCircleIcon className="h-5 w-5"></XCircleIcon>
                       </button>
+                    </td>
+                    <td className="p-5 text-right">
+                      <select
+                        value={item.quantity}
+                        onChange={(e) =>
+                          updateCartHandler(item, e.target.value)
+                        }
+                      >
+                        {[...Array(item.countInStock).keys()].map((x) => (
+                          <option key={x + 1} value={x + 1}>
+                            {x + 1}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
           <div className="card p-5">
             <ul>
               <li>
@@ -99,7 +109,7 @@ function CartScreen() {
                   onClick={() => router.push('login?redirect=/shipping')}
                   className="primary-button w-full"
                 >
-                  Check out
+                  Check Out
                 </button>
               </li>
             </ul>
