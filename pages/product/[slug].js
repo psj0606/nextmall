@@ -1,17 +1,35 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-
+import React, { useContext } from 'react';
 import Layout from '../../components/Layout';
 import data from '../../utils/data';
+import { Store } from '../../utils/Store';
 
 export default function ProductScreen() {
+  const { state, dispatch } = useContext(Store);
+  const router = useRouter();
+
   const { query } = useRouter();
   const { slug } = query;
   const product = data.products.find((x) => x.slug === slug);
+
   if (!product) {
-    return <div>Product Not Found</div>;
+    return <div>Product Not Found. 그런 상품이 없습니다.</div>;
   }
+
+  const addToCartHandler = () => {
+    const existItem = state.cart.cartItems.find((x) => x.slug === product.slug);
+    const quantity = existItem ? existItem.quantity + 1 : 1;
+
+    if (product.countInStock < quantity) {
+      alert('Sorry. 재고가 부족합니다.');
+      return;
+    }
+
+    dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
+    router.push('/cart');
+  };
 
   return (
     <Layout title={product.name}>
@@ -28,17 +46,18 @@ export default function ProductScreen() {
             layout="responsive"
           ></Image>
         </div>
+
         <div>
           <ul>
             <li>
-              <h1 className="text-lq">{product.name}</h1>
+              <h1 className="text-lg">{product.name}</h1>
             </li>
-            <li>Category:{product.category}</li>
-            <li>Brand:{product.brand}</li>
+            <li>Category: {product.category}</li>
+            <li>Brand: {product.brand}</li>
             <li>
-              {product.rating} of {product.numReviews}reviews
+              {product.rating} of {product.numReviews}
             </li>
-            <li>Description:{product.description} </li>
+            <li>Description: {product.description}</li>
           </ul>
         </div>
 
@@ -50,9 +69,14 @@ export default function ProductScreen() {
             </div>
             <div className="mb-2 flex justify-between">
               <div>Status</div>
-              <div>{product.countInStock > 0 ? 'in stock' : 'Unavailable'}</div>
+              <div>{product.countInStock > 0 ? 'In stock' : 'Unavailable'}</div>
             </div>
-            <button className="primary-button w-full">카트에 넣기</button>
+            <button
+              className="primary-button w-full"
+              onClick={addToCartHandler}
+            >
+              카트에 넣기
+            </button>
           </div>
         </div>
       </div>
